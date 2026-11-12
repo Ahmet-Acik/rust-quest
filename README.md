@@ -4,7 +4,7 @@ Welcome to **RustQuest**, a hands-on learning project designed to teach you core
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 Open `/Users/drahmetacik/Projects/rust-quest` as your active workspace, then run:
 
@@ -31,7 +31,7 @@ cargo test
 
 ---
 
-## 🗺️ Your 5-Mission Learning Path
+## Your 5-Mission Learning Path
 
 Read the source files in this order:
 
@@ -50,7 +50,7 @@ Read the source files in this order:
 4. **Mission 5 — Fearless Concurrency (`src/concurrency.rs`)**
    - See how `std::thread::scope` and `std::sync::mpsc::channel` split work across OS threads safely without data races.
 
-5. **🎯 Your Coding Challenges (`src/exercises.rs`)**
+5. ** Your Coding Challenges (`src/exercises.rs`)**
    - Open `src/exercises.rs` where 4 hands-on functions have `todo!()` placeholders.
    - Implement each function and verify your solution by running:
      ```bash
@@ -59,7 +59,7 @@ Read the source files in this order:
 
 ---
 
-## 🌟 Next Level Extensions (Once you finish `exercises.rs`)
+## Next Level Extensions (Once you finish `exercises.rs`)
 - **Milestone A:** Add a `delete <id>` command in `src/main.rs` using `Vec::retain`.
 - **Milestone B:** Replace the TSV storage in `src/storage.rs` with JSON using `serde` and `serde_json` (`cargo add serde --features derive && cargo add serde_json`).
 - **Milestone C:** Replace manual `env::args()` parsing in `src/main.rs` with `clap` (`cargo add clap --features derive`).
