@@ -1,0 +1,8 @@
+[package]
+name = "rust-quest"
+version = "0.1.0"
+edition = "2021"
+description = "A hands-on Rust learning project: CLI Task & Knowledge Manager with progressive exercises"
+
+[dependencies]
+
