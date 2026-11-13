@@ -42,5 +42,18 @@ mod tests {
         let tag_results = search_by_keyword(&tasks, "ownership");
         assert_eq!(tag_results.len(), 1);
     }
+
+    #[test]
+    fn test_filter_by_min_priority() {
+        let tasks = vec![
+            Task::new(1, String::from("Low task"), Priority::Low),
+            Task::new(2, String::from("Med task"), Priority::Medium),
+            Task::new(3, String::from("High task"), Priority::High),
+        ];
+
+        let med_and_up = filter_by_min_priority(&tasks, Priority::Medium);
+        let ids: Vec<usize> = med_and_up.iter().map(|t| t.id).collect();
+        assert_eq!(ids, vec![2, 3]);
+    }
 }
 
