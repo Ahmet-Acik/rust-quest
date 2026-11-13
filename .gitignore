@@ -18,3 +18,8 @@
 .env.*
 !.env.example
 
+# Local task database files
+tasks.tsv
+tasks.json
+
+
