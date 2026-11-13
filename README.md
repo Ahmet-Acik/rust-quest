@@ -13,19 +13,25 @@ Open `/Users/drahmetacik/Projects/rust-quest` as your active workspace, then run
 cargo run -- demo
 cargo run -- list
 
-# 2. Add a new task with priority and tags
+# 2. Add a new task with priority and tags (or use pipe-separated quick add)
 cargo run -- add "Finish Rust exercises" high rust,learning
+cargo run -- quick "Build a CLI | medium | rust,cli"
 
-# 3. Search tasks (zero-copy borrowing with lifetimes)
+# 3. List tasks (optionally sorted by priority descending)
+cargo run -- list --sort
+
+# 4. Search & filter tasks (zero-copy borrowing with lifetimes)
 cargo run -- search "rust"
+cargo run -- filter high
 
-# 4. Complete a task
+# 5. Complete or delete a task
 cargo run -- done 1
+cargo run -- delete 2
 
-# 5. Compute stats across worker threads
+# 6. Compute stats across worker threads
 cargo run -- stats
 
-# 6. Run the built-in unit tests
+# 7. Run the built-in unit tests
 cargo test
 ```
 
