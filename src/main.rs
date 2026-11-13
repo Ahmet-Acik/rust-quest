@@ -108,12 +108,45 @@ fn main() {
             tasks.push(task);
             save_tasks(db_path, &tasks).expect("Failed to save tasks");
         }
+        "quick" => {
+            let raw = match args.get(2) {
+                Some(r) if !r.trim().is_empty() => r,
+                _ => {
+                    eprintln!(
+                        "Usage: cargo run -- quick \"<title> | <priority> | [tag1,tag2]\""
+                    );
+                    return;
+                }
+            };
+            let next_id = tasks.iter().map(|t| t.id).max().unwrap_or(0) + 1;
+            match parse_quick_task(next_id, raw) {
+                Ok(task) => {
+                    println!("✅ Added: {}", task);
+                    tasks.push(task);
+                    save_tasks(db_path, &tasks).expect("Failed to save tasks");
+                }
+                Err(e) => eprintln!("Error parsing quick task: {}", e),
+            }
+        }
         "list" => {
             if tasks.is_empty() {
                 println!("No tasks yet! Run `cargo run -- demo` to seed sample tasks.");
             } else {
-                println!("📋 Your Tasks ({}):", tasks.len());
-                for task in &tasks {
+                let sort_flag = matches!(args.get(2).map(|s| s.as_str()), Some("--sort" | "-s"));
+                let display_tasks: Vec<Task>;
+                let iter_slice: &[Task] = if sort_flag {
+                    display_tasks = sort_by_priority_desc(&tasks);
+                    &display_tasks
+                } else {
+                    &tasks
+                };
+
+                println!(
+                    "📋 Your Tasks ({}{}):",
+                    tasks.len(),
+                    if sort_flag { ", sorted by priority" } else { "" }
+                );
+                for task in iter_slice {
                     println!("  {}", task);
                 }
             }
@@ -136,6 +169,25 @@ fn main() {
                 None => eprintln!("Task #{} not found.", id),
             }
         }
+        "delete" => {
+            let id: usize = match args.get(2).and_then(|s| s.parse().ok()) {
+                Some(id) => id,
+                None => {
+                    eprintln!("Please provide a valid task ID: `cargo run -- delete <id>`");
+                    return;
+                }
+            };
+
+            let before_len = tasks.len();
+            tasks.retain(|t| t.id != id);
+
+            if tasks.len() < before_len {
+                save_tasks(db_path, &tasks).expect("Failed to save tasks");
+                println!("🗑️  Deleted task #{}.", id);
+            } else {
+                eprintln!("Task #{} not found.", id);
+            }
+        }
         "search" => {
             let query = match args.get(2) {
                 Some(q) => q,
@@ -146,6 +198,30 @@ fn main() {
             };
             let matches = search_by_keyword(&tasks, query);
             println!("🔍 Found {} matching task(s) for '{}':", matches.len(), query);
+            for task in matches {
+                println!("  {}", task);
+            }
+        }
+        "filter" => {
+            let min_priority = match args.get(2) {
+                Some(p) => match Priority::from_str(p) {
+                    Ok(prio) => prio,
+                    Err(e) => {
+                        eprintln!("{}", e);
+                        return;
+                    }
+                },
+                None => {
+                    eprintln!("Usage: cargo run -- filter <low|medium|high>");
+                    return;
+                }
+            };
+            let matches = filter_by_min_priority(&tasks, min_priority);
+            println!(
+                "🎯 Found {} task(s) with priority >= {}:",
+                matches.len(),
+                min_priority
+            );
             for task in matches {
                 println!("  {}", task);
             }
