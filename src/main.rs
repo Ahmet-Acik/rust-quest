@@ -2,8 +2,9 @@ use std::env;
 use std::path::Path;
 
 use rust_quest::concurrency::compute_stats_parallel;
+use rust_quest::exercises::{parse_quick_task, sort_by_priority_desc};
 use rust_quest::models::{Priority, Task};
-use rust_quest::search::search_by_keyword;
+use rust_quest::search::{filter_by_min_priority, search_by_keyword};
 use rust_quest::storage::{load_tasks, save_tasks};
 
 const DB_FILE: &str = "tasks.tsv";
@@ -13,9 +14,12 @@ fn print_help() {
         r#"🦀 RustQuest — CLI Task & Knowledge Manager
 Usage:
   cargo run -- add "<title>" [low|medium|high] [tag1,tag2]
-  cargo run -- list
+  cargo run -- quick "<title> | <priority> | [tag1,tag2]"
+  cargo run -- list [--sort|-s]
   cargo run -- done <id>
+  cargo run -- delete <id>
   cargo run -- search "<keyword>"
+  cargo run -- filter <low|medium|high>
   cargo run -- stats
   cargo run -- demo
 "#
