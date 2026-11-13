@@ -1,4 +1,4 @@
-# 🦀 RustQuest (`rust-quest`)
+# RustQuest (`rust-quest`)
 
 Welcome to **RustQuest**, a hands-on learning project designed to teach you core Rust concepts by reading, running, and extending a real CLI Task & Knowledge Manager with zero external dependencies.
 
