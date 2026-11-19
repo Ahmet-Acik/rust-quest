@@ -1,12 +1,57 @@
-# RustQuest (`rust-quest`)
+# RustQuest (`rust-quest`) — Rust for Java Developers Edition
 
-Welcome to **RustQuest**, a hands-on learning project designed to teach you core Rust concepts by reading, running, and extending a real CLI Task & Knowledge Manager with zero external dependencies.
+Welcome to **RustQuest**, a hands-on learning project designed specifically for **Java developers transitioning to Rust**. Every source file contains side-by-side inline comments (`☕ JAVA SIMILARITY` and `🦀 RUST DIFFERENCE`) showing how Rust maps to Core Java—and where Rust fundamentally differs.
 
 ---
 
-## Quick Start
+## Core Java vs. Rust — Mental Model Cheat Sheet
 
-Open `/Users/drahmetacik/Projects/rust-quest` as your active workspace, then run:
+| Concept | ☕ Core Java | 🦀 Rust Equivalent | Key Difference & Where to See It |
+| :--- | :--- | :--- | :--- |
+| **Packages & Visibility** | `package`, `import`, package-private default | `mod`, `use`, **private by default** (`pub` to expose) | [src/lib.rs](src/lib.rs) |
+| **Build & Dependencies** | Maven (`pom.xml`) / Gradle (`build.gradle`) | Cargo ([Cargo.toml](Cargo.toml)) | `cargo build`, `cargo run`, `cargo test` |
+| **Variables** | Mutable by default (`final` for immutable) | **Immutable by default** (`let x`; use `let mut x` to mutate) | [src/main.rs](src/main.rs) |
+| **Classes & Records** | `class` / `record` with fields + constructors | `struct` + `impl` block (`Task::new(...)`) | No class inheritance (`extends`); composition + traits ([src/models.rs](src/models.rs)) |
+| **Boilerplate Generation** | Lombok (`@Data`, `@EqualsAndHashCode`) / `record` | `#[derive(Debug, Clone, PartialEq, Eq)]` | Zero-reflection compile-time macros ([src/models.rs](src/models.rs)) |
+| **Enums & Tagged Unions** | `enum` or Java 17+ `sealed interface` + `record`s | `enum` (Algebraic Data Types) + exhaustive `match` | Each Rust enum variant can carry different data ([src/models.rs](src/models.rs)) |
+| **Interfaces & Generics** | `interface` + `<T extends Summarizable>` (Type Erasure) | `trait` + `<T: Summarizable>` (Monomorphization) | Zero-cost static dispatch; implement traits on any type ([src/models.rs](src/models.rs)) |
+| **Memory Management** | Garbage Collector (GC) + heap references | **Ownership, Move Semantics & Borrowing (`&T`, `&mut T`)** | Deterministic cleanup (RAII / `Drop`), zero GC pauses ([src/models.rs](src/models.rs)) |
+| **Strings** | `String` (heap object) / `StringBuilder` | `String` (owned heap buffer) vs. `&str` (borrowed view/slice) | Pass `&str` to read strings without allocating ([src/models.rs](src/models.rs)) |
+| **Equality** | `a == b` (reference address!) vs. `a.equals(b)` | `a == b` calls `PartialEq` (value equality by default!) | No accidental reference-equality bugs ([src/models.rs](src/models.rs)) |
+| **Nullability** | `null` reference (`NullPointerException`) / `Optional<T>` | **No `null`!** `Option<T>` (`Some(T)` / `None`) | Zero-cost Null-Pointer Optimization ([src/exercises.rs](src/exercises.rs)) |
+| **Error Handling** | `try / catch / throws` (stack unwinding exceptions) | `Result<T, E>` (`Ok(T)` / `Err(E)`) + `?` operator | Errors are return values; `From` converts error types automatically ([src/storage.rs](src/storage.rs)) |
+| **Resource Cleanup** | `try-with-resources` (`AutoCloseable`) | **RAII (`Drop` trait)** | Files and locks close automatically at scope exit `}` ([src/storage.rs](src/storage.rs)) |
+| **Streams & Lambdas** | `list.stream().filter(x -> ...).toList()` | `slice.iter().filter(\|x\| ...).collect()` + Lifetimes (`'a`) | Compiles to a raw loop with zero intermediate heap allocations ([src/search.rs](src/search.rs)) |
+| **Concurrency** | `Thread`, `synchronized`, `BlockingQueue` | `thread::scope`, `mpsc::channel`, `Arc<Mutex<T>>`, `Send`/`Sync` | Data races are **compile-time errors**; mutex wraps the data ([src/concurrency.rs](src/concurrency.rs)) |
+
+---
+
+## Your 6-Step Guided Code Tour
+
+Read the source files in this order to see every `☕ JAVA SIMILARITY` and `🦀 RUST DIFFERENCE` comment in context:
+
+1. **[src/lib.rs](src/lib.rs) — Modules, Crates & Visibility**
+   - How `mod` and `use` replace Java `package` and `import`, and why Rust defaults to private visibility.
+2. **[src/models.rs](src/models.rs) — Enums, Structs, Ownership, Borrowing & Traits**
+   - `Priority` & `Status` enums vs. Java `enum` and `sealed interface`.
+   - `Task` struct: ownership transfers (`move`), immutable borrows (`&self`), exclusive mutable borrows (`&mut self`), `&str` vs. `String`, and `Vec<T>` vs. `ArrayList<T>`.
+   - `Summarizable` trait & generic `format_badge<T: Summarizable>` vs. Java `interface` and type-erased generics.
+3. **[src/storage.rs](src/storage.rs) — `Result<T, E>`, the `?` Operator & RAII File I/O**
+   - How `Result<T, E>`, `From<io::Error>`, and `?` replace Java checked exceptions and `try / catch / throws`.
+   - Why Rust doesn't need `try-with-resources` (`AutoCloseable`).
+4. **[src/search.rs](src/search.rs) — Lifetimes (`'a`), Iterators & Closures vs. Java Streams**
+   - Why returning borrowed references (`Vec<&'a Task>`) requires lifetime annotations instead of a Garbage Collector.
+   - How `.iter().filter(|t| ...).collect()` compares to Java `Stream`.
+5. **[src/concurrency.rs](src/concurrency.rs) — Fearless Concurrency: Message Passing & `Arc<Mutex<T>>`**
+   - Pattern 1: Scoped worker threads (`thread::scope`) + channels (`mpsc::channel`).
+   - Pattern 2: Shared mutable state with `Arc<Mutex<HashMap<...>>>` vs. Java `synchronized` and GC references.
+6. **[src/exercises.rs](src/exercises.rs) & [src/main.rs](src/main.rs) — `Option<T>`, `Comparator` Sorting & CLI Macros**
+   - Why `Option<&mut Task>` eliminates `NullPointerException` with zero memory overhead.
+   - Chaining `.cmp().then_with()` vs. Java `Comparator.comparing(...).thenComparing(...)`.
+
+---
+
+## Quick Start Commands
 
 ```bash
 # 1. Seed sample tasks and view them
@@ -31,42 +76,6 @@ cargo run -- delete 2
 # 6. Compute stats across worker threads
 cargo run -- stats
 
-# 7. Run the built-in unit tests
+# 7. Run all built-in unit tests
 cargo test
 ```
-
----
-
-## Your 5-Mission Learning Path
-
-Read the source files in this order:
-
-1. **Mission 1 & 2 — Enums, Structs & Borrowing (`src/models.rs`)**
-   - See how `Priority` and `Status` use algebraic data types (`enum`) and pattern matching (`match`).
-   - Compare owned data (`String`, `Vec<String>`) vs borrowed slices (`&str`, `&self`, `&mut self`).
-   - See how `fmt::Display` is implemented (Rust's trait system).
-
-2. **Mission 3 — Error Handling & File I/O (`src/storage.rs`)**
-   - Learn how Rust replaces exceptions with `Result<T, E>` and the `?` operator.
-   - See how `From<io::Error>` lets `?` automatically convert error types.
-
-3. **Mission 4 — Lifetimes & Iterators (`src/search.rs`)**
-   - Understand explicit lifetimes (`fn search_by_keyword<'a>(tasks: &'a [Task], ...) -> Vec<&'a Task>`) to filter data without cloning strings.
-
-4. **Mission 5 — Fearless Concurrency (`src/concurrency.rs`)**
-   - See how `std::thread::scope` and `std::sync::mpsc::channel` split work across OS threads safely without data races.
-
-5. ** Your Coding Challenges (`src/exercises.rs`)**
-   - Open `src/exercises.rs` where 4 hands-on functions have `todo!()` placeholders.
-   - Implement each function and verify your solution by running:
-     ```bash
-     cargo test -- --ignored
-     ```
-
----
-
-## Next Level Extensions (Once you finish `exercises.rs`)
-- **Milestone A:** Add a `delete <id>` command in `src/main.rs` using `Vec::retain`.
-- **Milestone B:** Replace the TSV storage in `src/storage.rs` with JSON using `serde` and `serde_json` (`cargo add serde --features derive && cargo add serde_json`).
-- **Milestone C:** Replace manual `env::args()` parsing in `src/main.rs` with `clap` (`cargo add clap --features derive`).
-
