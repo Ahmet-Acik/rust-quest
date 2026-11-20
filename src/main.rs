@@ -14,6 +14,7 @@ use std::path::Path;
 
 use rust_quest::concurrency::compute_stats_parallel;
 use rust_quest::exercises::{parse_quick_task, sort_by_priority_desc};
+use rust_quest::java_patterns::create_exporter;
 use rust_quest::models::{Priority, Task};
 use rust_quest::search::{filter_by_min_priority, search_by_keyword};
 use rust_quest::storage::{load_tasks, save_tasks};
@@ -33,6 +34,7 @@ Usage:
   cargo run -- delete <id>
   cargo run -- search "<keyword>"
   cargo run -- filter <low|medium|high>
+  cargo run -- export [markdown|csv]
   cargo run -- stats
   cargo run -- demo
 "#
