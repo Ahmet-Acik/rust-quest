@@ -23,10 +23,16 @@ Welcome to **RustQuest**, a hands-on learning project designed specifically for 
 | **Resource Cleanup** | `try-with-resources` (`AutoCloseable`) | **RAII (`Drop` trait)** | Files and locks close automatically at scope exit `}` ([src/storage.rs](src/storage.rs)) |
 | **Streams & Lambdas** | `list.stream().filter(x -> ...).toList()` | `slice.iter().filter(\|x\| ...).collect()` + Lifetimes (`'a`) | Compiles to a raw loop with zero intermediate heap allocations ([src/search.rs](src/search.rs)) |
 | **Concurrency** | `Thread`, `synchronized`, `BlockingQueue` | `thread::scope`, `mpsc::channel`, `Arc<Mutex<T>>`, `Send`/`Sync` | Data races are **compile-time errors**; mutex wraps the data ([src/concurrency.rs](src/concurrency.rs)) |
+| **Runtime Polymorphism** | Interface reference (`TaskExporter exp`) / `List<TaskExporter>` | Trait Objects: `Box<dyn TaskExporter>` / `&dyn TaskExporter` | Explicit 2-word fat pointer `(data_ptr, vtable_ptr)` ([src/java_patterns.rs](src/java_patterns.rs)) |
+| **Constructor Overloading** | Overloaded constructors (`Task(id, title)`, `Task(...)`) | **Builder Pattern** (`TaskBuilder`) + `impl Into<String>` | Rust has no method/constructor overloading ([src/java_patterns.rs](src/java_patterns.rs)) |
+| **Custom Destructors** | `AutoCloseable.close()` + `try (...)` / `finally` | `impl Drop for AuditGuard` (`fn drop(&mut self)`) | Compiler runs `drop()` automatically at scope exit `}` ([src/java_patterns.rs](src/java_patterns.rs)) |
+| **Functional Interfaces** | `Predicate<T>`, `Consumer<T>` ("effectively final" capture) | `Fn`, `FnMut`, `FnOnce` closure traits | `FnMut` mutates local stack variables directly without `AtomicInteger` ([src/java_patterns.rs](src/java_patterns.rs)) |
+| **TreeMap / HashSet / Collectors** | `TreeMap`, `HashSet`, `Collectors.toSet()` | `BTreeMap` (`Ord`), `HashSet` (`Eq + Hash`), polymorphic `.collect()` | `.collect()` can even transpose `Iterator<Result<T, E>>` into `Result<Vec<T>, E>` ([src/java_patterns.rs](src/java_patterns.rs)) |
+| **Single-Thread Object Graphs** | Multiple fields referencing & mutating the same `List` | `Rc<RefCell<T>>` (Reference Counting + Interior Mutability) | Moves borrow checking from compile time to runtime ([src/java_patterns.rs](src/java_patterns.rs)) |
 
 ---
 
-## Your 6-Step Guided Code Tour
+## Your 7-Step Guided Code Tour
 
 Read the source files in this order to see every `☕ JAVA SIMILARITY` and `🦀 RUST DIFFERENCE` comment in context:
 
@@ -48,6 +54,8 @@ Read the source files in this order to see every `☕ JAVA SIMILARITY` and `🦀
 6. **[src/exercises.rs](src/exercises.rs) & [src/main.rs](src/main.rs) — `Option<T>`, `Comparator` Sorting & CLI Macros**
    - Why `Option<&mut Task>` eliminates `NullPointerException` with zero memory overhead.
    - Chaining `.cmp().then_with()` vs. Java `Comparator.comparing(...).thenComparing(...)`.
+7. **[src/java_patterns.rs](src/java_patterns.rs) — Advanced Core Java Patterns in Rust**
+   - Dynamic dispatch (`Box<dyn TaskExporter>`), Builder pattern + `impl Into<String>`, custom `Drop` guard vs. `AutoCloseable`, `Fn` / `FnMut` / `FnOnce` vs. "effectively final" lambdas, `BTreeMap` / `HashSet` / polymorphic `.collect()`, and `Rc<RefCell<T>>` interior mutability.
 
 ---
 
@@ -73,9 +81,13 @@ cargo run -- filter high
 cargo run -- done 1
 cargo run -- delete 2
 
-# 6. Compute stats across worker threads
+# 6. Export tasks using dynamic dispatch (`Box<dyn TaskExporter>`)
+cargo run -- export markdown
+cargo run -- export csv
+
+# 7. Compute stats across worker threads
 cargo run -- stats
 
-# 7. Run all built-in unit tests
+# 8. Run all built-in unit tests
 cargo test
 ```
