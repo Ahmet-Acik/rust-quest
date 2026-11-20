@@ -1,3 +1,14 @@
+//! Entry point for the `rust-quest` CLI binary.
+//!
+//! ☕ JAVA SIMILARITY:
+//! - `fn main()` is the program entry point, just like `public static void main(String[] args)`.
+//!
+//! 🦀 RUST DIFFERENCE:
+//! - In Rust, free functions can exist at the module level without being wrapped in a `class Main`.
+//! - Notice the `!` in `println!(...)` and `vec![...]`: the `!` means it is a **compile-time macro**,
+//!   not a normal function. That's how Rust checks your format string placeholders (`{}`) at
+//!   **compile time** instead of throwing `IllegalFormatException` at runtime like `String.format()`!
+
 use std::env;
 use std::path::Path;
 
@@ -7,11 +18,13 @@ use rust_quest::models::{Priority, Task};
 use rust_quest::search::{filter_by_min_priority, search_by_keyword};
 use rust_quest::storage::{load_tasks, save_tasks};
 
+// `const` in Rust is a compile-time constant (like `private static final String DB_FILE = "tasks.tsv";` in Java).
 const DB_FILE: &str = "tasks.tsv";
 
 fn print_help() {
+    // `r#"..."#` is a raw multi-line string literal (similar to Java 15+ text blocks `"""..."""`).
     println!(
-        r#"🦀 RustQuest — CLI Task & Knowledge Manager
+        r#"🦀 RustQuest — CLI Task & Knowledge Manager (Java -> Rust Edition)
 Usage:
   cargo run -- add "<title>" [low|medium|high] [tag1,tag2]
   cargo run -- quick "<title> | <priority> | [tag1,tag2]"
@@ -27,9 +40,11 @@ Usage:
 }
 
 fn seed_demo_tasks() -> Vec<Task> {
+    // ☕ JAVA: Variables are mutable by default unless marked `final`.
+    // 🦀 RUST: Variables (`let x`) are **immutable by default** (`final` by default!) unless marked `let mut x`.
     let mut t1 = Task::new(
         1,
-        String::from("Understand Ownership & Borrowing"),
+        String::from("Understand Ownership & Borrowing (vs Java GC)"),
         Priority::High,
     );
     t1.add_tag("core");
@@ -37,7 +52,7 @@ fn seed_demo_tasks() -> Vec<Task> {
 
     let mut t2 = Task::new(
         2,
-        String::from("Practice Pattern Matching with Enums"),
+        String::from("Practice Enums & Pattern Matching (vs Java Sealed Types)"),
         Priority::High,
     );
     t2.add_tag("core");
@@ -46,19 +61,25 @@ fn seed_demo_tasks() -> Vec<Task> {
 
     let mut t3 = Task::new(
         3,
-        String::from("Complete exercises in src/exercises.rs"),
+        String::from("Compare Traits, Result & Arc<Mutex<T>> with Core Java"),
         Priority::Medium,
     );
     t3.add_tag("practice");
-    t3.add_tag("tests");
+    t3.add_tag("java-to-rust");
 
+    // `vec![...]` macro is like Java's `new ArrayList<>(List.of(t1, t2, t3))`
     vec![t1, t2, t3]
 }
 
 fn main() {
+    // ☕ JAVA: `String[] args` is passed directly into `main(String[] args)` (excluding program name).
+    // 🦀 RUST: `env::args()` returns an iterator where `args[0]` is the binary path itself,
+    // and `args[1]` is the first user argument.
     let args: Vec<String> = env::args().collect();
     let db_path = Path::new(DB_FILE);
 
+    // ☕ JAVA: `try { tasks = loadTasks(dbPath); } catch (StorageException err) { ... }`
+    // 🦀 RUST: Pattern match on `Result<Vec<Task>, StorageError>`!
     let mut tasks = match load_tasks(db_path) {
         Ok(loaded) => loaded,
         Err(err) => {
@@ -67,6 +88,8 @@ fn main() {
         }
     };
 
+    // ☕ JAVA: `String command = args.length > 1 ? args[1] : "help";`
+    // 🦀 RUST: `args.get(1)` safely returns `Option<&String>` (never throws `IndexOutOfBoundsException`!).
     let command = args.get(1).map(|s| s.as_str()).unwrap_or("help");
 
     match command {
@@ -74,12 +97,14 @@ fn main() {
             tasks = seed_demo_tasks();
             save_tasks(db_path, &tasks).expect("Failed to save demo tasks");
             println!("✨ Seeded 3 demo Rust learning tasks into '{}'!", DB_FILE);
+            // Notice `&tasks`: we iterate over references so `tasks` isn't consumed/moved!
             for task in &tasks {
                 println!("  {}", task);
             }
         }
         "add" => {
             let title = match args.get(2) {
+                // Pattern guard `if !t.trim().is_empty()` right inside a `match` arm!
                 Some(t) if !t.trim().is_empty() => t.clone(),
                 _ => {
                     eprintln!("Usage: cargo run -- add \"<title>\" [low|medium|high] [tags]");
@@ -152,6 +177,8 @@ fn main() {
             }
         }
         "done" => {
+            // ☕ JAVA: `Optional.ofNullable(...).flatMap(...)`
+            // 🦀 RUST: `.and_then(...)` is `flatMap` on `Option`!
             let id: usize = match args.get(2).and_then(|s| s.parse().ok()) {
                 Some(id) => id,
                 None => {
@@ -179,6 +206,8 @@ fn main() {
             };
 
             let before_len = tasks.len();
+            // ☕ JAVA: `tasks.removeIf(t -> t.getId() == id);`
+            // 🦀 RUST: `tasks.retain(|t| t.id != id);` keeps elements where the predicate is `true`.
             tasks.retain(|t| t.id != id);
 
             if tasks.len() < before_len {
@@ -243,4 +272,3 @@ fn main() {
         _ => print_help(),
     }
 }
-
