@@ -271,6 +271,13 @@ fn main() {
                 }
             }
         }
+        "export" => {
+            let format_arg = args.get(2).map(|s| s.as_str()).unwrap_or("markdown");
+            // Runtime polymorphism (`Box<dyn TaskExporter>`) — just like a Java interface reference!
+            let exporter = create_exporter(format_arg);
+            println!("📤 Exporting tasks as {}:\n", exporter.format_name());
+            print!("{}", exporter.export(&tasks));
+        }
         _ => print_help(),
     }
 }
